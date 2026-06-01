@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Student Portal - college dashboard for academics, attendance, tasks, quizzes, portfolio, and analytics.">
+  <meta name="theme-color" content="#ff3d7f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Student Portal">
+  <title>Student Portal</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="loader" class="loader">
+    <div class="loader-mark"></div>
+    <p>Preparing your workspace</p>
+  </div>
+
+  <div id="toast-root" class="toast-root" aria-live="polite"></div>
+
+  <div id="login-overlay" class="login-overlay">
+    <section class="login-card">
+      <div class="brand-lockup">
+        <span class="brand-dot"></span>
+        <div>
+          <h1>Student Portal</h1>
+          <p>Academic command center</p>
+        </div>
+      </div>
+      <form id="login-form" class="stack" autocomplete="off">
+        <label>
+          Email or roll number
+          <input type="text" id="login-email" value="student">
+        </label>
+        <label>
+          Password
+          <input type="password" id="login-password" value="student123">
+        </label>
+        <button type="submit" class="btn-primary btn-full">Sign in</button>
+        <p class="form-note">Use the local credentials saved in Profile. Firebase Auth replaces this in the backend phase.</p>
+      </form>
+    </section>
+  </div>
+
+  <div id="app" class="app hidden">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-dot"></span>
+        <strong>StudentPortal</strong>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Main navigation">
+        <a href="#dashboard" class="nav-item active" data-page="dashboard">Dashboard</a>
+        <a href="#performance" class="nav-item" data-page="performance">Performance</a>
+        <a href="#attendance" class="nav-item" data-page="attendance">Attendance</a>
+        <a href="#quizzes" class="nav-item" data-page="quizzes">Quizzes</a>
+        <a href="#tasks" class="nav-item" data-page="tasks">Tasks</a>
+        <a href="#portfolio" class="nav-item" data-page="portfolio">Portfolio</a>
+        <a href="#store" class="nav-item" data-page="store">Store</a>
+        <a href="#analytics" class="nav-item" data-page="analytics">Analytics</a>
+        <a href="#profile" class="nav-item" data-page="profile">Profile</a>
+      </nav>
+
+      <button class="nav-item sidebar-logout" id="btn-logout">Logout</button>
+    </aside>
+
+    <div class="main-wrap">
+      <header class="topbar">
+        <button id="sidebar-toggle" class="icon-btn menu-btn" aria-label="Open navigation">Menu</button>
+        <div class="topbar-title">
+          <h2 id="page-title">Dashboard</h2>
+          <span id="topbar-semester">Semester 4 - 2026</span>
+        </div>
+        <div class="topbar-actions">
+          <span id="backend-status" class="status-chip status-offline">Local Mode</span>
+          <span id="access-status" class="status-chip">Student View</span>
+          <button id="pwa-install-btn" class="icon-btn hidden" title="Install app">Install App</button>
+          <button id="theme-toggle" class="icon-btn" title="Toggle theme">Theme</button>
+          <button id="notif-btn" class="icon-btn notif-trigger" title="Notifications">
+            Alerts
+            <span id="notif-badge" class="notif-badge"></span>
+          </button>
+          <button id="cart-btn" class="icon-btn cart-trigger" title="Shopping Cart">
+            Cart
+            <span id="cart-badge" class="cart-badge"></span>
+          </button>
+          <button id="quick-add-task" class="btn-primary">New task</button>
+          <button class="avatar" id="avatar-initials" title="Open profile" aria-label="Open profile">SN</button>
+        </div>
+      </header>
+
+      <div id="access-banner" class="access-banner hidden"></div>
+
+      <aside id="notif-panel" class="notif-panel hidden">
+        <div class="panel-head">
+          <h3>Notifications</h3>
+          <button id="notif-clear" class="btn-ghost">Mark read</button>
+        </div>
+        <div id="notif-list" class="panel-list"></div>
+      </aside>
+
+      <main id="page-container" class="page-container">
+        <section id="page-dashboard" class="page active">
+          <div class="hero-card">
+            <div>
+              <span class="eyebrow">College dashboard</span>
+              <h1 id="welcome-name">Welcome back</h1>
+              <p>Track results, attendance, deadlines, quizzes, portfolio work, and recent activity from one place.</p>
+            </div>
+            <div class="hero-metrics">
+              <article>
+                <span>CGPA</span>
+                <strong id="dash-cgpa">Pending</strong>
+              </article>
+              <article>
+                <span>Current SGPA</span>
+                <strong id="dash-sgpa">Pending</strong>
+              </article>
+              <article>
+                <span>Attendance</span>
+                <strong id="dash-attendance">0%</strong>
+              </article>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <button class="stat-card" data-goto="performance">
+              <span>Subjects</span>
+              <strong id="stat-subjects">0</strong>
+            </button>
+            <button class="stat-card" data-goto="tasks">
+              <span>Pending tasks</span>
+              <strong id="stat-tasks-pending">0</strong>
+            </button>
+            <button class="stat-card" data-goto="quizzes">
+              <span>Quizzes taken</span>
+              <strong id="stat-quizzes-taken">0</strong>
+            </button>
+            <button class="stat-card" data-goto="quizzes">
+              <span>Best quiz score</span>
+              <strong id="stat-best-score">Pending</strong>
+            </button>
+          </div>
+
+          <div class="grid-two">
+            <section class="glass-card chart-card">
+              <h3>Semester SGPA</h3>
+              <canvas id="chart-sgpa" height="160"></canvas>
+            </section>
+            <section class="glass-card chart-card">
+              <h3>Subject Attendance</h3>
+              <canvas id="chart-attendance" height="160"></canvas>
+            </section>
+          </div>
+
+          <div class="grid-two">
+            <section class="glass-card">
+              <div class="card-head">
+                <h3>Upcoming deadlines</h3>
+                <button class="btn-ghost" data-goto="tasks">Manage</button>
+              </div>
+              <div id="deadlines-list" class="compact-list"></div>
+            </section>
+            <section class="glass-card">
+              <div class="card-head">
+                <h3>Recent activity</h3>
+                <button class="btn-ghost" data-goto="analytics">View all</button>
+              </div>
+              <div id="activity-list" class="compact-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="page-performance" class="page">
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">Academic records</span>
+              <h1>Performance tracker</h1>
+              <p>View marks, calculate grades, and compare semester progress.</p>
+            </div>
+          </div>
+
+          <div id="semester-tabs" class="segmented"></div>
+
+          <div class="grid-form">
+            <section class="glass-card">
+              <h3>Update subject marks</h3>
+              <form id="marks-form" class="form-grid">
+                <label>Subject<select id="marks-subject"></select></label>
+                <label>Internal / 50<input id="marks-internal" type="number" min="0" max="50"></label>
+                <label>External / 50<input id="marks-external" type="number" min="0" max="50"></label>
+                <button type="submit" class="btn-primary">Save marks</button>
+              </form>
+            </section>
+            <section class="glass-card cgpa-summary">
+              <span>Cumulative GPA</span>
+              <strong id="perf-cgpa">Pending</strong>
+              <div id="cgpa-breakdown" class="badge-row"></div>
+            </section>
+          </div>
+
+          <section class="glass-card">
+            <div class="card-head">
+              <h3>Subject database</h3>
+              <span class="status-pill">Live local data</span>
+            </div>
+            <form id="subject-form" class="form-grid wide">
+              <input type="hidden" id="subject-original-code">
+              <label>Subject name<input id="subject-name" type="text" placeholder="Engineering Mathematics II"></label>
+              <label>Subject code<input id="subject-code" type="text" placeholder="MA201"></label>
+              <label>Credits<input id="subject-credits" type="number" min="1" max="10" value="3"></label>
+              <label>Internal / 50<input id="subject-internal" type="number" min="0" max="50" value="0"></label>
+              <label>External / 50<input id="subject-external" type="number" min="0" max="50" value="0"></label>
+              <button type="submit" class="btn-primary" id="subject-submit-btn">Add subject</button>
+              <button type="button" class="btn-ghost hidden" id="subject-cancel-edit">Cancel edit</button>
+            </form>
+            <div class="table-wrap subject-db-table">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Subject</th>
+                    <th>Code</th>
+                    <th>Credits</th>
+                    <th>Total</th>
+                    <th>Grade</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="subject-db-tbody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="glass-card">
+            <div class="card-head">
+              <h3 id="marks-sem-title">Semester marks</h3>
+              <span class="status-pill" id="marks-sgpa-cell">SGPA Pending</span>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Subject</th>
+                    <th>Code</th>
+                    <th>Credits</th>
+                    <th>Internal</th>
+                    <th>External</th>
+                    <th>Total</th>
+                    <th>Grade</th>
+                  </tr>
+                </thead>
+                <tbody id="marks-tbody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <div class="grid-two">
+            <section class="glass-card chart-card">
+              <h3>SGPA trend</h3>
+              <canvas id="chart-sgpa-trend" height="170"></canvas>
+            </section>
+            <section class="glass-card chart-card">
+              <h3>Current semester marks</h3>
+              <canvas id="chart-subject-perf" height="170"></canvas>
+            </section>
+          </div>
+        </section>
+
+        <section id="page-attendance" class="page">
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">Attendance system</span>
+              <h1>Attendance tracker</h1>
+              <p>Update class counts, mark daily status, and catch low attendance early.</p>
+            </div>
+          </div>
+
+          <div class="grid-form">
+            <section class="glass-card attendance-overview">
+              <div class="ring-wrap">
+                <canvas id="att-ring" width="164" height="164"></canvas>
+                <strong id="att-overall-pct">0%</strong>
+              </div>
+              <div>
+                <h3>Overall attendance</h3>
+                <p class="text-muted">Low attendance is highlighted below 75%.</p>
+              </div>
+            </section>
+            <section class="glass-card">
+              <h3>Attendance controls</h3>
+              <form id="attendance-form" class="form-grid">
+                <label>Subject<select id="attendance-subject"></select></label>
+                <label>Attended<input id="attendance-attended" type="number" min="0"></label>
+                <label>Total classes<input id="attendance-total" type="number" min="0"></label>
+                <button type="submit" class="btn-primary">Save attendance</button>
+              </form>
+            </section>
+          </div>
+
+          <div id="att-grid" class="att-grid"></div>
+
+          <section class="glass-card chart-card">
+            <h3>Attendance breakdown</h3>
+            <canvas id="chart-att-bar" height="180"></canvas>
+          </section>
+        </section>
+
+        <section id="page-quizzes" class="page">
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">Practice center</span>
+              <h1>Quiz system</h1>
+              <p>Category quizzes with timer, score analysis, and local leaderboard.</p>
+            </div>
+          </div>
+
+          <div id="quiz-categories" class="quiz-categories"></div>
+
+          <div id="quiz-play" class="quiz-play hidden">
+            <section class="glass-card">
+              <div class="quiz-meta">
+                <span id="quiz-cat-label">Category</span>
+                <span id="quiz-progress">1 / 10</span>
+              </div>
+              <div class="timer-track"><div id="timer-fill"></div></div>
+              <strong id="quiz-timer">30s</strong>
+            </section>
+            <section class="glass-card">
+              <h2 id="quiz-question">Question</h2>
+              <div id="quiz-options" class="quiz-options"></div>
+            </section>
+          </div>
+
+          <div id="quiz-result" class="glass-card result-card hidden">
+            <span id="result-icon" class="result-icon">Result</span>
+            <h2 id="result-title">Quiz complete</h2>
+            <p id="result-subtitle">Your analysis is ready.</p>
+            <div class="result-stats">
+              <article><strong id="rs-score">0%</strong><span>Score</span></article>
+              <article><strong id="rs-correct">0</strong><span>Correct</span></article>
+              <article><strong id="rs-wrong">0</strong><span>Wrong</span></article>
+              <article><strong id="rs-time">0s</strong><span>Time</span></article>
+            </div>
+            <div class="button-row">
+              <button id="quiz-retry" class="btn-primary">Retry</button>
+              <button id="quiz-back" class="btn-ghost">Back to categories</button>
+            </div>
+          </div>
+
+          <section class="glass-card">
+            <h3>Leaderboard</h3>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Category</th>
+                    <th>Score</th>
+                    <th>Correct</th>
+                    <th>Time</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboard-tbody"></tbody>
+              </table>
+            </div>
+            <p id="leaderboard-empty" class="empty-state hidden">No scores yet. Start a quiz to populate this table.</p>
+          </section>
+        </section>
+
+        <section id="page-tasks" class="page">
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">Planner</span>
+              <h1>Task manager</h1>
+              <p>Add, edit, prioritize, filter, and complete academic tasks.</p>
+            </div>
+          </div>
+
+          <section class="glass-card">
+            <form id="task-form" class="task-form">
+              <input type="hidden" id="task-edit-id">
+              <input type="text" id="task-input" placeholder="What needs to be done?">
+              <select id="task-priority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+              </select>
+              <input type="date" id="task-deadline">
+              <button type="submit" class="btn-primary" id="task-submit-btn">Add task</button>
+              <button type="button" class="btn-ghost hidden" id="task-cancel-edit">Cancel</button>
+            </form>
+          </section>
+
+          <div class="segmented">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="pending">Pending</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+            <button class="filter-btn" data-filter="high">High</button>
+            <button class="filter-btn" data-filter="medium">Medium</button>
+            <button class="filter-btn" data-filter="low">Low</button>
+          </div>
+
+          <div id="task-list" class="task-list"></div>
+        </section>
+
+        <section id="page-portfolio" class="page">
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">Project showcase</span>
+              <h1>Portfolio system</h1>
+              <p>About me, skills, achievements, projects, and contact.</p>
+            </div>
+          </div>
+
+          <section class="glass-card" style="margin-bottom:20px">
+            <h3>About Me</h3>
+            <div class="portfolio-about">
+              <div class="about-avatar" id="pf-avatar">SN</div>
+              <div class="about-info">
+                <h2 id="pf-about-name">Student</h2>
+                <p id="pf-about-bio">Computer Science student passionate about web development, AI, and building impactful software solutions.</p>
+                <p id="pf-about-college" style="font-size:0.84rem"></p>
+              </div>
+            </div>
+          </section>
+
+          <section class="glass-card" style="margin-bottom:20px">
+            <h3>Skills</h3>
+            <div id="skills-grid" class="skills-grid"></div>
+          </section>
+
+          <section class="glass-card" style="margin-bottom:20px">
+            <h3>Achievements</h3>
+            <div id="achievements-grid" class="achievements-grid"></div>
+          </section>
+
+          <div class="segmented">
+            <button class="filter-btn active" data-pf-filter="all">All</button>
+            <button class="filter-btn" data-pf-filter="dev">Development</button>
+            <button class="filter-btn" data-pf-filter="design">Design</button>
+            <button class="filter-btn" data-pf-filter="experiment">Experiments</button>
+          </div>
+
+          <div id="portfolio-grid" class="portfolio-grid"></div>
+
+          <section class="glass-card" style="margin-bottom:20px">
+            <h3>Add project</h3>
+            <form id="portfolio-form" class="form-grid wide">
+              <label>Title<input id="pf-title" type="text" placeholder="Project title"></label>
+              <label>Description<input id="pf-desc" type="text" placeholder="Short description"></label>
+              <label>Category<select id="pf-category"><option value="dev">Development</option><option value="design">Design</option><option value="experiment">Experiment</option></select></label>
+              <label>Tech tags<input id="pf-tech" type="text" placeholder="HTML, CSS, JS"></label>
+              <label>Image URL<input id="pf-image" type="url" placeholder="https://..."></label>
+              <label>Live URL<input id="pf-live" type="url" placeholder="https://..."></label>
+              <button type="submit" class="btn-primary">Add project</button>
+            </form>
+          </section>
+
+          <section class="glass-card">
+            <h3>Contact Me</h3>
+            <form id="contact-form" class="contact-form">
+              <label>Name<input id="contact-name" type="text" placeholder="Your name"><span class="form-error" id="err-contact-name"></span></label>
+              <label>Email<input id="contact-email" type="email" placeholder="you@email.com"><span class="form-error" id="err-contact-email"></span></label>
+              <label class="full-width">Subject<input id="contact-subject" type="text" placeholder="Subject"><span class="form-error" id="err-contact-subject"></span></label>
+              <label class="full-width">Message<textarea id="contact-message" placeholder="Write your message..."></textarea><span class="form-error" id="err-contact-msg"></span></label>
+              <button type="submit" class="btn-primary">Send Message</button>
+            </form>
+          </section>
+        </section>
+
+        <section id="page-store" class="page">
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">Campus marketplace</span>
+              <h1>Student Store</h1>
+              <p>Browse academic essentials, tech gear, and study accessories.</p>
+            </div>
+          </div>
+
+          <div class="store-header">
+            <input type="text" id="store-search" class="store-search" placeholder="Search products...">
+            <select id="store-filter">
+              <option value="all">All Categories</option>
+              <option value="electronics">Electronics</option>
+              <option value="stationery">Stationery</option>
+              <option value="books">Books</option>
+              <option value="accessories">Accessories</option>
+            </select>
+          </div>
+
+          <div id="store-grid" class="store-grid"></div>
+        </section>
+
+        <section id="page-analytics" class="page">
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">Insights</span>
+              <h1>Analytics dashboard</h1>
+              <p>High-level academic health metrics and recent activity.</p>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <article class="stat-card"><span>Completion rate</span><strong id="analytics-completion">0%</strong></article>
+            <article class="stat-card"><span>Low attendance</span><strong id="analytics-low-att">0</strong></article>
+            <article class="stat-card"><span>Portfolio projects</span><strong id="analytics-projects">0</strong></article>
+            <article class="stat-card"><span>Activity events</span><strong id="analytics-events">0</strong></article>
+          </div>
+
+          <div class="grid-two">
+            <section class="glass-card chart-card">
+              <h3>Task priority mix</h3>
+              <canvas id="chart-task-priority" height="180"></canvas>
+            </section>
+            <section class="glass-card">
+              <h3>Activity log</h3>
+              <div id="analytics-activity" class="compact-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="page-profile" class="page">
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">Account</span>
+              <h1>Profile dashboard</h1>
+              <p>Profile data is meant to come from the admin-managed database. Theme changes can still stay local on this device.</p>
+            </div>
+          </div>
+
+          <section class="glass-card profile-avatar-card" style="margin-bottom:20px">
+            <h3>Profile Photo</h3>
+            <div class="profile-avatar-wrap">
+              <div class="profile-avatar-lg" id="profile-avatar-preview">SN</div>
+              <div class="profile-avatar-actions">
+                <label class="btn-primary" style="cursor:pointer;display:inline-flex;align-items:center;min-height:40px;padding:0 17px;border-radius:var(--radius-sm)">
+                  Upload Photo
+                  <input type="file" id="profile-avatar-input" accept="image/*" style="display:none">
+                </label>
+                <button type="button" class="btn-ghost" id="profile-avatar-remove">Remove Photo</button>
+                <p class="text-muted" style="margin:6px 0 0;font-size:0.8rem">JPG, PNG or WebP. Max 2 MB. Stored locally.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="glass-card">
+            <form id="profile-form" class="form-grid wide">
+              <label>Full name<input id="profile-name" type="text"></label>
+              <label>Roll number<input id="profile-roll" type="text"></label>
+              <label>School name<input id="profile-school" type="text"></label>
+              <label>Email<input id="profile-email" type="email"></label>
+              <label>Phone<input id="profile-phone" type="tel"></label>
+              <label>College<input id="profile-college" type="text"></label>
+              <label>Branch<input id="profile-branch" type="text"></label>
+              <label>Current semester<input id="profile-semester" type="number" min="1" max="12"></label>
+              <label>Low attendance alert %<input id="settings-att-limit" type="number" min="1" max="100"></label>
+              <label>Login ID<input id="settings-login-id" type="text"></label>
+              <label>Login password<input id="settings-login-password" type="password"></label>
+              <label>Portal theme
+                <select id="settings-theme">
+                  <option value="amrita">Amrita Glow</option>
+                  <option value="dark">Midnight Violet</option>
+                  <option value="ocean">Ocean Cyan</option>
+                  <option value="sunset">Sunset Coral</option>
+                  <option value="forest">Forest Lime</option>
+                  <option value="light">Clean Light</option>
+                </select>
+              </label>
+              <button type="submit" class="btn-primary">Save profile</button>
+              <button type="button" class="btn-ghost" id="reset-demo-data">Reset demo data</button>
+            </form>
+          </section>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <section class="modal-card">
+      <button id="modal-close" class="modal-close" aria-label="Close modal">Close</button>
+      <div id="modal-body"></div>
+    </section>
+  </div>
+
+  <div id="cart-backdrop" class="cart-backdrop"></div>
+  <aside id="cart-sidebar" class="cart-sidebar">
+    <div class="cart-header">
+      <h3>Shopping Cart</h3>
+      <button id="cart-close" class="icon-btn">Close</button>
+    </div>
+    <div id="cart-body" class="cart-body"></div>
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span>Total</span>
+        <span id="cart-total-amount">₹0</span>
+      </div>
+      <button id="cart-checkout" class="btn-primary btn-full">Checkout</button>
+      <button id="cart-clear" class="btn-ghost btn-full" style="margin-top:8px">Clear Cart</button>
+    </div>
+  </aside>
+
+  <script src="firebase-service.js?v=2"></script>
+  <script src="pwa.js?v=2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="data.js?v=2"></script>
+  <script src="script.js?v=2"></script>
+</body>
+</html>
